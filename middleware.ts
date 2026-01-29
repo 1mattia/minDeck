@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-// import { updateSession } from './utils/supabase/middleware'
+import { updateSession } from './utils/supabase/middleware'
 
 // Fix per l'errore "ReferenceError: __dirname is not defined"
 if (typeof __dirname === 'undefined') {
@@ -10,9 +10,13 @@ if (typeof __dirname === 'undefined') {
  * Funzione Middleware
  */
 export async function middleware(request: NextRequest) {
-    // Commentata logica Supabase per test di isolamento
-    // return await updateSession(request)
-    return NextResponse.next();
+    try {
+        return await updateSession(request)
+    } catch (e) {
+        console.error("Middleware error:", e)
+        // Fallback in case of error to prevent 500
+        return NextResponse.next()
+    }
 }
 
 export const config = {

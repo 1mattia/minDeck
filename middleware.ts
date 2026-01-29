@@ -1,8 +1,19 @@
 import { type NextRequest } from 'next/server'
 import { updateSession } from './utils/supabase/middleware'
 
+// Polyfill __dirname for ESM/Edge environments if needed by dependencies
+if (typeof __dirname === 'undefined') {
+    (globalThis as any).__dirname = '.';
+}
+
 export async function middleware(request: NextRequest) {
-    return await updateSession(request)
+    try {
+        console.log('Middleware invoking for path:', request.nextUrl.pathname)
+        return await updateSession(request)
+    } catch (err) {
+        console.error('Middleware crash:', err)
+        throw err
+    }
 }
 
 export const config = {

@@ -1,12 +1,23 @@
 import { type NextRequest } from 'next/server'
 import { updateSession } from './utils/supabase/middleware'
 
+// Fix per l'errore "ReferenceError: __dirname is not defined"
+// Questo shim inganna le librerie CJS che girano nell'ambiente Edge di Vercel
+if (typeof __dirname === 'undefined') {
+    (globalThis as any).__dirname = '/';
+}
+
 /**
- * Next.js 16 Proxy Function
- * Sostituisce il vecchio middleware.ts
+ * Funzione Middleware (ripristinata per compatibilità Vercel)
  */
-export async function proxy(request: NextRequest) {
-    return await updateSession(request)
+export async function middleware(request: NextRequest) {
+    try {
+        return await updateSession(request)
+    } catch (e) {
+        console.error("Middleware error:", e)
+        // In caso di errore, proseguiamo senza bloccare (fail-safe)
+        return
+    }
 }
 
 export const config = {

@@ -6,7 +6,16 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Download, CheckCircle2, Loader2, Eye, X } from 'lucide-react'
 
-const DECKS = [
+interface Deck {
+    id: string;
+    title: string;
+    subject: string;
+    icon?: string;
+    cards: { question: string; answer: string }[];
+    isExternal?: boolean;
+}
+
+const DECKS: Deck[] = [
     {
         "id": "math_complete",
         "title": "Matematica Completa",
@@ -50,7 +59,7 @@ export default function ImportPage() {
     const [dbDecks, setDbDecks] = useState<any[]>([])
     const [importingId, setImportingId] = useState<string | null>(null)
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
-    const [previewDeck, setPreviewDeck] = useState<any | null>(null)
+    const [previewDeck, setPreviewDeck] = useState<Deck | null>(null)
     const [activeCategory, setActiveCategory] = useState('All')
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -85,7 +94,7 @@ export default function ImportPage() {
         ? allDecks
         : allDecks.filter(d => d.subject === activeCategory)
 
-    const handleImport = async (deckToImport: any) => {
+    const handleImport = async (deckToImport: Deck) => {
         setImportingId(deckToImport.id)
 
         const { data: { user } } = await supabase.auth.getUser()

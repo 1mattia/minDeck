@@ -84,6 +84,25 @@ export default function DeckModal({ onClose, initialData }: { onClose: () => voi
         }
     }
 
+    const handleDelete = async () => {
+        if (!initialData?.id) return
+        if (!confirm('Sei sicuro di voler eliminare questo mazzo? Questa azione è irreversibile.')) return
+
+        setLoading(true)
+        const { error } = await supabase
+            .from('decks')
+            .delete()
+            .eq('id', initialData.id)
+
+        if (error) {
+            alert(error.message)
+            setLoading(false)
+        } else {
+            router.refresh()
+            onClose()
+        }
+    }
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
             <div className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 bg-[#0a0a0a] shadow-2xl flex flex-col">
@@ -201,11 +220,21 @@ export default function DeckModal({ onClose, initialData }: { onClose: () => voi
                     </div>
                 </form>
 
-                <div className="p-6 border-t border-white/5">
+                <div className="p-6 border-t border-white/5 flex gap-4">
+                    {initialData && (
+                        <button
+                            type="button"
+                            onClick={handleDelete}
+                            disabled={loading}
+                            className="flex-1 h-12 rounded-xl border border-red-500/50 bg-red-500/10 font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            <Trash2 className="h-4 w-4" /> Elimina
+                        </button>
+                    )}
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="w-full h-12 rounded-xl bg-white font-bold text-black hover:bg-zinc-200 active:scale-95 disabled:opacity-50"
+                        className={`${initialData ? 'flex-[2]' : 'w-full'} h-12 rounded-xl bg-white font-bold text-black hover:bg-zinc-200 active:scale-95 disabled:opacity-50`}
                     >
                         {loading ? 'Salvataggio...' : initialData ? 'Salva Modifiche' : 'Crea Mazzo'}
                     </button>

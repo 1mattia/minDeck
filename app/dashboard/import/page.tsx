@@ -59,14 +59,20 @@ export default function ImportPage() {
     const [dbDecks, setDbDecks] = useState<any[]>([])
     const [importingId, setImportingId] = useState<string | null>(null)
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
+    const [importedSourceIds, setImportedSourceIds] = useState<Set<string>>(new Set())
     const [previewDeck, setPreviewDeck] = useState<Deck | null>(null)
     const [activeCategory, setActiveCategory] = useState('All')
     const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<any>(null)
     const router = useRouter()
     const supabase = createClient()
 
     useEffect(() => {
-        async function fetchPublicDecks() {
+        async function loadInitialData() {
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
+
+            // Fetch public decks
             const { data } = await supabase
                 .from('decks')
                 .select('*')
@@ -74,9 +80,24 @@ export default function ImportPage() {
                 .order('created_at', { ascending: false })
 
             setDbDecks(data || [])
+
+            // Fetch user's imported decks
+            if (user) {
+                const { data: userDecks } = await supabase
+                    .from('decks')
+                    .select('source_deck_id')
+                    .eq('user_id', user.id)
+                    .not('source_deck_id', 'is', null)
+
+                if (userDecks) {
+                    const ids = new Set(userDecks.map(d => d.source_deck_id as string))
+                    setImportedSourceIds(ids)
+                }
+            }
+
             setLoading(false)
         }
-        fetchPublicDecks()
+        loadInitialData()
     }, [])
 
     // Merge static presets with DB decks for the gallery
@@ -95,13 +116,16 @@ export default function ImportPage() {
         : allDecks.filter(d => d.subject === activeCategory)
 
     const handleImport = async (deckToImport: Deck) => {
-        setImportingId(deckToImport.id)
-
-        const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
             router.push('/login')
             return
         }
+
+        if (importedIds.has(deckToImport.id) || importedSourceIds.has(deckToImport.id)) {
+            return
+        }
+
+        setImportingId(deckToImport.id)
 
         const { error: deckError } = await supabase
             .from('decks')
@@ -110,7 +134,8 @@ export default function ImportPage() {
                 title: deckToImport.title,
                 subject: deckToImport.subject,
                 cards: deckToImport.cards,
-                is_public: false // Cloned mazzi are private by default for the new owner
+                is_public: false, // Cloned mazzi are private by default for the new owner
+                source_deck_id: deckToImport.id
             })
 
         if (deckError) {
@@ -179,14 +204,14 @@ export default function ImportPage() {
                                     </button>
                                     <button
                                         onClick={() => handleImport(deck)}
-                                        disabled={importingId === deck.id || importedIds.has(deck.id)}
-                                        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold transition-all active:scale-95 ${importedIds.has(deck.id)
+                                        disabled={importingId === deck.id || importedIds.has(deck.id) || importedSourceIds.has(deck.id)}
+                                        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold transition-all active:scale-95 ${(importedIds.has(deck.id) || importedSourceIds.has(deck.id))
                                             ? 'bg-green-500/20 text-green-500 border border-green-500/20'
                                             : 'bg-white text-black hover:bg-zinc-200 disabled:opacity-50'
                                             }`}
                                     >
-                                        {importingId === deck.id ? <Loader2 className="h-4 w-4 animate-spin" /> : importedIds.has(deck.id) ? <CheckCircle2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                                        {importingId === deck.id ? 'Importando...' : importedIds.has(deck.id) ? 'Nel tuo Archivio' : 'Importa Mazzo'}
+                                        {importingId === deck.id ? <Loader2 className="h-4 w-4 animate-spin" /> : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? <CheckCircle2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+                                        {importingId === deck.id ? 'Importando...' : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? 'Nel tuo Archivio' : 'Importa Mazzo'}
                                     </button>
                                 </div>
                             </div>
@@ -233,13 +258,13 @@ export default function ImportPage() {
                                     handleImport(previewDeck)
                                     setPreviewDeck(null)
                                 }}
-                                disabled={importingId === previewDeck.id || importedIds.has(previewDeck.id)}
-                                className={`flex w-full h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold transition-all active:scale-95 ${importedIds.has(previewDeck.id)
+                                disabled={importingId === previewDeck.id || importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id)}
+                                className={`flex w-full h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold transition-all active:scale-95 ${(importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id))
                                     ? 'bg-green-500/20 text-green-500 border border-green-500/20'
                                     : 'bg-white text-black hover:bg-zinc-200 disabled:opacity-50'
                                     }`}
                             >
-                                {importedIds.has(previewDeck.id) ? 'Già Importato' : 'Importa questo mazzo'}
+                                {(importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id)) ? 'Già Importato' : 'Importa questo mazzo'}
                             </button>
                         </div>
                     </div>

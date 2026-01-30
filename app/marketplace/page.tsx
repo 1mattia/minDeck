@@ -11,6 +11,7 @@ export default function MarketplacePage() {
     const [dbDecks, setDbDecks] = useState<any[]>([])
     const [importingId, setImportingId] = useState<string | null>(null)
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
+    const [importedSourceIds, setImportedSourceIds] = useState<Set<string>>(new Set())
     const [previewDeck, setPreviewDeck] = useState<any | null>(null)
     const [activeCategory, setActiveCategory] = useState('All')
     const [loading, setLoading] = useState(true)
@@ -23,6 +24,7 @@ export default function MarketplacePage() {
             const { data: { user } } = await supabase.auth.getUser()
             setUser(user)
 
+            // Fetch public decks
             const { data, error } = await supabase
                 .from('decks')
                 .select(`
@@ -35,6 +37,21 @@ export default function MarketplacePage() {
 
             if (error) console.error("Marketplace fetch error:", error)
             setDbDecks(data || [])
+
+            // Fetch user's imported decks to prevent duplicates
+            if (user) {
+                const { data: userDecks } = await supabase
+                    .from('decks')
+                    .select('source_deck_id')
+                    .eq('user_id', user.id)
+                    .not('source_deck_id', 'is', null)
+
+                if (userDecks) {
+                    const ids = new Set(userDecks.map(d => d.source_deck_id as string))
+                    setImportedSourceIds(ids)
+                }
+            }
+
             setLoading(false)
         }
         loadInitialData()
@@ -49,6 +66,10 @@ export default function MarketplacePage() {
             return
         }
 
+        if (importedIds.has(deckToImport.id) || importedSourceIds.has(deckToImport.id)) {
+            return
+        }
+
         setImportingId(deckToImport.id)
         const { error: deckError } = await supabase
             .from('decks')
@@ -57,7 +78,8 @@ export default function MarketplacePage() {
                 title: deckToImport.title,
                 subject: deckToImport.subject,
                 cards: deckToImport.cards,
-                is_public: false
+                is_public: false,
+                source_deck_id: deckToImport.id
             })
 
         if (deckError) {
@@ -175,14 +197,14 @@ export default function MarketplacePage() {
                                         </button>
                                         <button
                                             onClick={() => handleImport(deck)}
-                                            disabled={importingId === deck.id || importedIds.has(deck.id)}
-                                            className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl px-6 text-sm font-black transition-all active:scale-95 ${importedIds.has(deck.id)
+                                            disabled={importingId === deck.id || importedIds.has(deck.id) || importedSourceIds.has(deck.id)}
+                                            className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl px-6 text-sm font-black transition-all active:scale-95 ${(importedIds.has(deck.id) || importedSourceIds.has(deck.id))
                                                 ? 'bg-green-500/10 text-green-500 border border-green-500/20'
                                                 : 'bg-white text-black hover:bg-zinc-200 disabled:opacity-50 shadow-xl shadow-white/5'
                                                 }`}
                                         >
-                                            {importingId === deck.id ? <Loader2 className="h-5 w-5 animate-spin" /> : importedIds.has(deck.id) ? <CheckCircle2 className="h-5 w-5" /> : <Download className="h-5 w-5" />}
-                                            {importingId === deck.id ? 'Importando...' : importedIds.has(deck.id) ? 'Nel tuo Archivio' : 'Importa Mazzo'}
+                                            {importingId === deck.id ? <Loader2 className="h-5 w-5 animate-spin" /> : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? <CheckCircle2 className="h-5 w-5" /> : <Download className="h-5 w-5" />}
+                                            {importingId === deck.id ? 'Importando...' : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? 'Nel tuo Archivio' : 'Importa Mazzo'}
                                         </button>
                                     </div>
                                 </div>
@@ -230,13 +252,13 @@ export default function MarketplacePage() {
                                     handleImport(previewDeck)
                                     setPreviewDeck(null)
                                 }}
-                                disabled={importingId === previewDeck.id || importedIds.has(previewDeck.id)}
-                                className={`flex w-full h-16 items-center justify-center gap-2 rounded-2xl px-6 font-black transition-all active:scale-95 ${importedIds.has(previewDeck.id)
+                                disabled={importingId === previewDeck.id || importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id)}
+                                className={`flex w-full h-16 items-center justify-center gap-2 rounded-2xl px-6 font-black transition-all active:scale-95 ${(importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id))
                                     ? 'bg-green-500/10 text-green-500 border border-green-500/20'
                                     : 'bg-blue-600 text-white hover:bg-blue-500 shadow-2xl shadow-blue-600/20'
                                     }`}
                             >
-                                {importedIds.has(previewDeck.id) ? 'Già Importato nel tuo Account' : 'Importa questo mazzo ora'}
+                                {(importedIds.has(previewDeck.id) || importedSourceIds.has(previewDeck.id)) ? 'Già Importato nel tuo Account' : 'Importa questo mazzo ora'}
                             </button>
                         </div>
                     </div>

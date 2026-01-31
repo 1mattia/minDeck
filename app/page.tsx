@@ -131,9 +131,9 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-20 text-center">
-        <div className="flex justify-center mb-8">
-          <Image src="/logo.png" alt="Logo" width={64} height={64} className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" />
-        </div>
+        {/* <div className="flex justify-center mb-8"> */}
+          {/* <Image src="/logo.png" alt="Logo" width={64} height={64} className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" /> */}
+        {/* </div> */}
         <p className="text-zinc-600 font-medium">© 2026 MindDeck. Creato per il futuro dell'apprendimento.</p>
       </footer>
     </div>

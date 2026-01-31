@@ -21,9 +21,9 @@ export default function DeckModal({ onClose, initialData }: { onClose: () => voi
     const addCard = () => setCards([...cards, { question: '', answer: '' }])
     const removeCard = (index: number) => setCards(cards.filter((_, i) => i !== index))
     const updateCard = (index: number, field: 'question' | 'answer', value: string) => {
-        const newCards = [...cards]
-        newCards[index][field] = value
-        setCards(newCards)
+        setCards(prev => prev.map((card, i) =>
+            i === index ? { ...card, [field]: value } : card
+        ))
     }
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

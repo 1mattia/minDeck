@@ -46,7 +46,7 @@ export default function LandingPage() {
         </div>
 
         <h1 className="max-w-5xl bg-gradient-to-b from-white to-white/40 bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-8xl">
-          Impara più veloce <br /> con <span className="text-blue-500">MindDeck</span>
+          Impara più veloce <br /> con <span className="text-blue-500">MinDeck</span>
         </h1>
         <p className="mt-8 max-w-2xl text-lg text-zinc-400 sm:text-xl font-medium">
           L'unico strumento che unisce design premium e scienza cognitiva. Gestisci i tuoi mazzi, importa file JSON e sfida la community.

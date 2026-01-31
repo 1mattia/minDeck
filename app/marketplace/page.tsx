@@ -11,7 +11,7 @@ export default function MarketplacePage() {
     const [dbDecks, setDbDecks] = useState<any[]>([])
     const [importingId, setImportingId] = useState<string | null>(null)
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
-    const [importedSourceIds, setImportedSourceIds] = useState<Set<string>>(new Set())
+    const [importedSourceIds, setImportedSourceIds] = useState<Map<string, { id: string, cards: any[] }>>(new Map())
     const [previewDeck, setPreviewDeck] = useState<any | null>(null)
     const [activeCategory, setActiveCategory] = useState('All')
     const [loading, setLoading] = useState(true)
@@ -42,13 +42,14 @@ export default function MarketplacePage() {
             if (user) {
                 const { data: userDecks } = await supabase
                     .from('decks')
-                    .select('source_deck_id')
+                    .select('id, source_deck_id, cards')
                     .eq('user_id', user.id)
                     .not('source_deck_id', 'is', null)
 
                 if (userDecks) {
-                    const ids = new Set(userDecks.map(d => d.source_deck_id as string))
-                    setImportedSourceIds(ids)
+                    const map = new Map()
+                    userDecks.forEach(d => map.set(d.source_deck_id, { id: d.id, cards: d.cards }))
+                    setImportedSourceIds(map)
                 }
             }
 
@@ -67,6 +68,11 @@ export default function MarketplacePage() {
         }
 
         if (importedIds.has(deckToImport.id) || importedSourceIds.has(deckToImport.id)) {
+            // Se è già importato, controlliamo se ci sono aggiornamenti
+            const existing = importedSourceIds.get(deckToImport.id)
+            if (existing && deckToImport.cards.length > existing.cards.length) {
+                await handleSync(deckToImport)
+            }
             return
         }
 
@@ -89,6 +95,45 @@ export default function MarketplacePage() {
         }
 
         setImportedIds(prev => new Set(prev).add(deckToImport.id))
+        setImportingId(null)
+    }
+
+    const handleSync = async (sourceDeck: any) => {
+        const existing = importedSourceIds.get(sourceDeck.id)
+        if (!existing) return
+
+        setImportingId(sourceDeck.id)
+
+        // Trova le carte che mancano nel mazzo locale
+        // Usiamo la domanda come chiave univoca (assunzione ragionevole per ora)
+        const localQuestions = new Set(existing.cards.map((c: any) => c.question))
+        const newCards = sourceDeck.cards.filter((c: any) => !localQuestions.has(c.question))
+
+        if (newCards.length === 0) {
+            setImportingId(null)
+            return
+        }
+
+        const updatedCards = [...existing.cards, ...newCards]
+
+        const { error } = await supabase
+            .from('decks')
+            .update({ cards: updatedCards })
+            .eq('id', existing.id)
+
+        if (error) {
+            alert(error.message)
+        } else {
+            // Aggiorna lo stato locale
+            setImportedSourceIds(prev => {
+                const next = new Map(prev)
+                const current = next.get(sourceDeck.id)
+                if (current) {
+                    next.set(sourceDeck.id, { ...current, cards: updatedCards })
+                }
+                return next
+            })
+        }
         setImportingId(null)
     }
 
@@ -164,6 +209,9 @@ export default function MarketplacePage() {
                         {filteredDecks.map((deck) => {
                             const starCount = deck.stars?.length || 0
                             const hasStarred = deck.stars?.some((s: any) => s.user_id === user?.id)
+                            const existingClone = importedSourceIds.get(deck.id)
+                            const hasUpdate = existingClone && deck.cards.length > existingClone.cards.length
+                            const isImported = importedIds.has(deck.id) || !!existingClone
 
                             return (
                                 <div key={deck.id} className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-8 transition-all hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full hover:shadow-2xl hover:shadow-blue-500/5">
@@ -197,14 +245,28 @@ export default function MarketplacePage() {
                                         </button>
                                         <button
                                             onClick={() => handleImport(deck)}
-                                            disabled={importingId === deck.id || importedIds.has(deck.id) || importedSourceIds.has(deck.id)}
-                                            className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl px-6 text-sm font-black transition-all active:scale-95 ${(importedIds.has(deck.id) || importedSourceIds.has(deck.id))
+                                            disabled={importingId === deck.id || (isImported && !hasUpdate)}
+                                            className={`flex h-14 w-full items-center justify-center gap-2 rounded-2xl px-6 text-sm font-black transition-all active:scale-95 ${isImported && !hasUpdate
                                                 ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                                                : 'bg-white text-black hover:bg-zinc-200 disabled:opacity-50 shadow-xl shadow-white/5'
+                                                : hasUpdate
+                                                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
+                                                    : 'bg-white text-black hover:bg-zinc-200 disabled:opacity-50 shadow-xl shadow-white/5'
                                                 }`}
                                         >
-                                            {importingId === deck.id ? <Loader2 className="h-5 w-5 animate-spin" /> : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? <CheckCircle2 className="h-5 w-5" /> : <Download className="h-5 w-5" />}
-                                            {importingId === deck.id ? 'Importando...' : (importedIds.has(deck.id) || importedSourceIds.has(deck.id)) ? 'Nel tuo Archivio' : 'Importa Mazzo'}
+                                            {importingId === deck.id ? (
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                            ) : isImported && !hasUpdate ? (
+                                                <CheckCircle2 className="h-5 w-5" />
+                                            ) : (
+                                                <Download className="h-5 w-5" />
+                                            )}
+                                            {importingId === deck.id
+                                                ? (hasUpdate ? 'Sincronizzazione...' : 'Importando...')
+                                                : isImported && !hasUpdate
+                                                    ? 'Nel tuo Archivio'
+                                                    : hasUpdate
+                                                        ? `Sincronizza (+${deck.cards.length - existingClone!.cards.length} carte)`
+                                                        : 'Importa Mazzo'}
                                         </button>
                                     </div>
                                 </div>

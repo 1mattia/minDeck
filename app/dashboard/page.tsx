@@ -80,7 +80,7 @@ export default function DashboardPage() {
             <nav className="border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-40">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
                     <Link href="/" className="flex items-center gap-3 text-xl font-bold tracking-tighter">
-                        <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-xl" />
+                        {/* <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-xl" /> */}
                         Mind<span className="text-blue-500">Deck</span>
                     </Link>
                     <div className="flex items-center gap-6">

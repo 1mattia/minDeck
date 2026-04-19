@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Sparkles, ChevronLeft, Loader2, Save, RefreshCw, ThumbsUp, ThumbsDown, CheckCircle2 } from 'lucide-react'
+import { Sparkles, ChevronLeft, Loader2, Save, RefreshCw, ThumbsUp, ThumbsDown, CheckCircle2, Globe, Lock } from 'lucide-react'
 import Logo from '@/components/Logo'
 
 type Card = {
@@ -28,6 +28,7 @@ export default function AIGeneratePage() {
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [step, setStep] = useState<'input' | 'review' | 'done'>('input')
+    const [isPublic, setIsPublic] = useState(false)
     const [error, setError] = useState('')
     const [feedbackGiven, setFeedbackGiven] = useState<'positive' | 'negative' | null>(null)
 
@@ -90,7 +91,7 @@ export default function AIGeneratePage() {
             title: deckTitle,
             subject: subject || topic,
             cards: cleanCards,
-            is_public: false
+            is_public: isPublic
         })
 
         if (error) setError(error.message)
@@ -262,6 +263,26 @@ export default function AIGeneratePage() {
                                         className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500 transition"
                                         placeholder="Materia (es: Matematica, Storia...)"
                                     />
+
+                                    {/* Visibility Toggle */}
+                                    <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.04] p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${isPublic ? 'bg-blue-500/10 text-blue-500' : 'bg-zinc-500/10 text-zinc-500'}`}>
+                                                {isPublic ? <Globe className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm">{isPublic ? 'Rendi Pubblico' : 'Rimani Privato'}</p>
+                                                <p className="text-xs text-zinc-500">{isPublic ? 'Tutti potranno vederlo nel Marketplace' : 'Solo tu potrai vederlo'}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsPublic(!isPublic)}
+                                            className={`relative h-6 w-11 rounded-full transition-colors duration-200 focus:outline-none ${isPublic ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                                        >
+                                            <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${isPublic ? 'translate-x-5' : ''}`} />
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={handleSave}
                                         disabled={saving || !deckTitle.trim()}

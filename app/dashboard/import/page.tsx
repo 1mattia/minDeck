@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Download, CheckCircle2, Loader2, Eye, X } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 interface Deck {
     id: string;
@@ -193,9 +194,10 @@ export default function ImportPage() {
         <div className="min-h-screen bg-[#030303] text-white">
             <nav className="border-b border-white/5 bg-black/50 backdrop-blur-md">
                 <div className="mx-auto flex max-w-7xl items-center px-6 py-4">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white">
+                    <Link href="/dashboard" className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white mr-8">
                         <ChevronLeft className="h-4 w-4" /> Torna alla Dashboard
                     </Link>
+                    <Logo size="sm" />
                 </div>
             </nav>
 
@@ -203,7 +205,7 @@ export default function ImportPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                     <div className="max-w-2xl">
                         <h1 className="text-4xl font-bold tracking-tight text-white">Galleria Pubblica</h1>
-                        <p className="mt-4 text-lg text-zinc-400">Esplora i mazzi creati dalla community e quelli ufficiali MindDeck.</p>
+                        <p className="mt-4 text-lg text-zinc-400">Esplora i mazzi creati dalla community e quelli ufficiali MinDeck.</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2">

@@ -28,7 +28,7 @@ export default function LoginPage() {
             });
             
             if (rpcError || !data) {
-                setError('Invalid username or password.');
+                setError('Nome utente o password non validi.');
                 setLoading(false);
                 return;
             }
@@ -69,14 +69,14 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="text-sm font-medium text-zinc-400">Email or Username</label>
+                            <label className="text-sm font-medium text-zinc-400">Email o Username</label>
                             <input
                                 type="text"
                                 required
                                 value={loginInput}
                                 onChange={(e) => setLoginInput(e.target.value)}
                                 className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="name@example.com or username"
+                                placeholder="nome@esempio.com o username"
                             />
                         </div>
                         <div>
@@ -97,14 +97,14 @@ export default function LoginPage() {
                         disabled={loading}
                         className="flex w-full items-center justify-center rounded-xl bg-white py-3 text-sm font-bold text-black transition hover:bg-zinc-200 active:scale-95 disabled:opacity-50"
                     >
-                        {loading ? 'Signing in...' : 'Sign in'}
+                        {loading ? 'Accesso in corso...' : 'Accedi'}
                     </button>
                 </form>
 
                 <p className="text-center text-sm text-zinc-500">
-                    Don't have an account?{' '}
+                    Non hai un account?{' '}
                     <Link href="/signup" className="font-semibold text-white hover:text-blue-400 transition">
-                        Sign up for free
+                        Registrati gratis
                     </Link>
                 </p>
             </div>

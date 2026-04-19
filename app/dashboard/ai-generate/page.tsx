@@ -174,6 +174,26 @@ export default function AIGeneratePage() {
                                 </div>
                             </div>
 
+                            {/* Visibility Toggle */}
+                            <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.04] p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${isPublic ? 'bg-blue-500/10 text-blue-500' : 'bg-zinc-500/10 text-zinc-500'}`}>
+                                        {isPublic ? <Globe className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm tracking-tight">{isPublic ? 'Rendi Pubblico' : 'Rimani Privato'}</p>
+                                        <p className="text-[10px] sm:text-xs text-zinc-500">{isPublic ? 'Tutti potranno vederlo nel Marketplace' : 'Solo tu potrai vederlo'}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPublic(!isPublic)}
+                                    className={`relative h-6 w-11 rounded-full transition-colors duration-200 focus:outline-none ${isPublic ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                                >
+                                    <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${isPublic ? 'translate-x-5' : ''}`} />
+                                </button>
+                            </div>
+
                             {error && <p className="text-red-500 text-sm bg-red-500/10 border border-red-500/20 p-3 rounded-xl">{error}</p>}
 
                             <button

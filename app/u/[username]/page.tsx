@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { UserPlus, UserMinus, ShieldCheck } from 'lucide-react'
+import { UserPlus, UserMinus, ShieldCheck, ChevronLeft } from 'lucide-react'
+import Navbar from '@/components/Navbar'
 
 export default function PublicProfilePage() {
     const { username } = useParams()
@@ -98,8 +99,15 @@ export default function PublicProfilePage() {
     if (!profile) return <div className="min-h-screen bg-[#030303] text-white flex justify-center items-center">Utente non trovato.</div>
 
     return (
-        <div className="min-h-screen bg-[#030303] text-white py-16 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-[#030303]">
+            <Navbar />
+
+            <div className="pt-32 pb-16 px-4">
+                <div className="max-w-4xl mx-auto">
+                    <Link href="/marketplace" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8 transition">
+                        <ChevronLeft className="h-4 w-4" /> Esplora altri mazzi
+                    </Link>
+
                 <div className="bg-white/[0.02] border border-white/5 p-8 rounded-3xl flex flex-col md:flex-row gap-8 items-center md:items-start mb-12">
                     <div className="h-32 w-32 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-4xl font-bold shadow-2xl">
                         {profile.display_name?.charAt(0).toUpperCase()}
@@ -150,6 +158,7 @@ export default function PublicProfilePage() {
                            </div> 
                         ))
                     )}
+                </div>
                 </div>
             </div>
         </div>

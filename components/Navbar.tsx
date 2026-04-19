@@ -21,9 +21,9 @@ export default function Navbar() {
                     <Link href="/marketplace" className="text-sm font-medium text-zinc-400 hover:text-white transition">
                         Marketplace
                     </Link>
-                    <a href="#features" className="text-sm font-medium text-zinc-400 hover:text-white transition">
+                    <Link href="/#features" className="text-sm font-medium text-zinc-400 hover:text-white transition">
                         Features
-                    </a>
+                    </Link>
                     {user ? (
                         <Link href="/dashboard" className="rounded-full bg-blue-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-blue-500">
                             Dashboard

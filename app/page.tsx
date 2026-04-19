@@ -130,7 +130,7 @@ export default function LandingPage() {
         {/* <div className="flex justify-center mb-8"> */}
         {/* <Image src="/logo.png" alt="Logo" width={64} height={64} className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" /> */}
         {/* </div> */}
-        <p className="text-zinc-600 font-medium">© 2026 MindDeck. Creato per il futuro dell'apprendimento.</p>
+        <p className="text-zinc-600 font-medium">© 2026 MinDeck. Creato per il futuro dell'apprendimento.</p>
       </footer>
     </div>
   )

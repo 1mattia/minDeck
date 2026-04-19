@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/Navbar'
 
 export default function SettingsPage() {
     const supabase = createClient()
@@ -98,7 +99,12 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto py-12 px-4">
+        <div className="min-h-screen bg-[#030303]">
+            <Navbar />
+            
+            <div className="max-w-2xl mx-auto pt-32 pb-12 px-4 relative">
+                <div className="absolute top-0 left-1/2 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-600/5 blur-[120px]" />
+
             <h1 className="text-3xl font-extrabold text-white mb-2">Account Settings</h1>
             <p className="text-zinc-400 mb-8">Manage your profile and preferences. Changes reflect on the App instantly.</p>
 
@@ -170,6 +176,7 @@ export default function SettingsPage() {
                 </div>
 
             </form>
+            </div>
         </div>
     )
 }

@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('')
+    const [loginInput, setLoginInput] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -18,8 +19,24 @@ export default function LoginPage() {
         setLoading(true)
         setError(null)
 
+        let actualEmail = loginInput;
+
+        // If it's a username (doesn't contain @), resolve it to an email
+        if (!loginInput.includes('@')) {
+            const { data, error: rpcError } = await supabase.rpc('get_email_by_username', {
+                p_username: loginInput
+            });
+            
+            if (rpcError || !data) {
+                setError('Invalid username or password.');
+                setLoading(false);
+                return;
+            }
+            actualEmail = data as string;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
-            email,
+            email: actualEmail,
             password,
         })
 
@@ -38,11 +55,9 @@ export default function LoginPage() {
 
             <div className="w-full max-w-md space-y-8 rounded-3xl border border-white/5 bg-white/[0.02] p-8 backdrop-blur-sm">
                 <div className="text-center">
-                    <Link href="/" className="text-2xl font-bold tracking-tighter">
-                        Mind<span className="text-blue-500">Deck</span>
-                    </Link>
-                    <h2 className="mt-6 text-3xl font-extrabold">Welcome back</h2>
-                    <p className="mt-2 text-sm text-zinc-400">Please enter your details to sign in.</p>
+                    <Logo size="md" />
+                    <h2 className="mt-6 text-3xl font-extrabold">Bentornato</h2>
+                    <p className="mt-2 text-sm text-zinc-400">Inserisci i tuoi dati per accedere.</p>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
@@ -54,14 +69,14 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="text-sm font-medium text-zinc-400">Email address</label>
+                            <label className="text-sm font-medium text-zinc-400">Email or Username</label>
                             <input
-                                type="email"
+                                type="text"
                                 required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={loginInput}
+                                onChange={(e) => setLoginInput(e.target.value)}
                                 className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="name@example.com"
+                                placeholder="name@example.com or username"
                             />
                         </div>
                         <div>

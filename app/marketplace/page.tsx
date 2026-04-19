@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, Download, CheckCircle2, Loader2, Eye, X, Star } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 export default function MarketplacePage() {
     const [dbDecks, setDbDecks] = useState<any[]>([])
@@ -24,19 +25,20 @@ export default function MarketplacePage() {
             const { data: { user } } = await supabase.auth.getUser()
             setUser(user)
 
-            // Fetch public decks
+            // Fetch public decks - sorted by star count
             const { data, error } = await supabase
                 .from('decks')
                 .select(`
                     *,
-                    profiles(display_name),
+                    profiles(display_name, username),
                     stars:stars(user_id)
                 `)
                 .eq('is_public', true)
-                .order('created_at', { ascending: false })
 
             if (error) console.error("Marketplace fetch error:", error)
-            setDbDecks(data || [])
+            // Sort by star count client-side for reliability
+            const sorted = (data || []).sort((a, b) => (b.stars?.length || 0) - (a.stars?.length || 0))
+            setDbDecks(sorted)
 
             // Fetch user's imported decks to prevent duplicates
             if (user) {
@@ -153,22 +155,19 @@ export default function MarketplacePage() {
             .from('decks')
             .select(`
                 *,
-                profiles(display_name),
+                profiles(display_name, username),
                 stars:stars(user_id)
             `)
             .eq('is_public', true)
-            .order('created_at', { ascending: false })
-        setDbDecks(data || [])
+        const sorted = (data || []).sort((a, b) => (b.stars?.length || 0) - (a.stars?.length || 0))
+        setDbDecks(sorted)
     }
 
     return (
         <div className="min-h-screen bg-[#030303] text-white">
             <nav className="border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-40">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                    <Link href="/" className="flex items-center gap-3 text-xl font-bold tracking-tighter">
-                        <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-xl" />
-                        Mind<span className="text-blue-500">Deck</span>
-                    </Link>
+                    <Logo size="md" />
                     <div className="flex items-center gap-6">
                         <Link href="/marketplace" className="text-sm font-medium text-white underline underline-offset-4">Marketplace</Link>
                         {user ? (
@@ -231,7 +230,13 @@ export default function MarketplacePage() {
                                             <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-[10px] font-bold">
                                                 {(deck.profiles?.display_name || 'U').charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-xs text-zinc-500 font-medium">Creato da <span className="text-zinc-300">{deck.profiles?.display_name || 'utente_mindeck'}</span></span>
+                                            {deck.profiles?.username ? (
+                                                <Link href={`/u/${deck.profiles.username}`} className="text-xs text-zinc-500 font-medium hover:text-zinc-300 transition">
+                                                    Creato da <span className="text-zinc-300">{deck.profiles.display_name}</span>
+                                                </Link>
+                                            ) : (
+                                                <span className="text-xs text-zinc-500 font-medium">Creato da <span className="text-zinc-300">{deck.profiles?.display_name || 'utente_mindeck'}</span></span>
+                                            )}
                                         </div>
                                         <p className="text-zinc-500 font-medium">{deck.cards.length} Carte interattive</p>
                                     </div>

@@ -10,9 +10,14 @@ export default function DeckModal({ onClose, initialData }: { onClose: () => voi
     const [title, setTitle] = useState(initialData?.title || '')
     const [subject, setSubject] = useState(initialData?.subject || '')
     const [isPublic, setIsPublic] = useState(initialData?.is_public || false)
-    const [cards, setCards] = useState<{ question: string, answer: string }[]>(
-        initialData?.cards || [{ question: '', answer: '' }]
-    )
+    const [cards, setCards] = useState<{ question: string, answer: string }[]>(() => {
+        if (!initialData?.cards) return [{ question: '', answer: '' }]
+        // Normalizza: supporta sia {question/answer} che {front/back}
+        return initialData.cards.map((c: any) => ({
+            question: c.question ?? c.front ?? '',
+            answer: c.answer ?? c.back ?? ''
+        }))
+    })
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const supabase = createClient()

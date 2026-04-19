@@ -40,10 +40,6 @@ export default function LandingPage() {
       <section className="relative flex flex-col items-center justify-center px-4 pt-48 pb-32 text-center">
         <div className="absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[140px]" />
 
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/5 bg-white/[0.03] px-4 py-2 text-sm font-medium backdrop-blur-md">
-          <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-          Nuova funzione: Importazione JSON disponibile ora
-        </div>
 
         <h1 className="max-w-5xl bg-gradient-to-b from-white to-white/40 bg-clip-text text-6xl font-black tracking-tight text-transparent sm:text-8xl">
           Impara più veloce <br /> con <span className="text-blue-500">MinDeck</span>
@@ -132,7 +128,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-20 text-center">
         {/* <div className="flex justify-center mb-8"> */}
-          {/* <Image src="/logo.png" alt="Logo" width={64} height={64} className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" /> */}
+        {/* <Image src="/logo.png" alt="Logo" width={64} height={64} className="opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer" /> */}
         {/* </div> */}
         <p className="text-zinc-600 font-medium">© 2026 MindDeck. Creato per il futuro dell'apprendimento.</p>
       </footer>

@@ -4,10 +4,12 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 
 export default function SignupPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
@@ -24,6 +26,9 @@ export default function SignupPage() {
             password,
             options: {
                 emailRedirectTo: `${window.location.origin}/auth/callback`,
+                data: {
+                    username: username
+                }
             },
         })
 
@@ -56,11 +61,9 @@ export default function SignupPage() {
 
             <div className="w-full max-w-md space-y-8 rounded-3xl border border-white/5 bg-white/[0.02] p-8 backdrop-blur-sm">
                 <div className="text-center">
-                    <Link href="/" className="text-2xl font-bold tracking-tighter">
-                        Mind<span className="text-blue-500">Deck</span>
-                    </Link>
-                    <h2 className="mt-6 text-3xl font-extrabold">Create an account</h2>
-                    <p className="mt-2 text-sm text-zinc-400">Start your learning journey today.</p>
+                    <Logo size="md" />
+                    <h2 className="mt-6 text-3xl font-extrabold">Crea un account</h2>
+                    <p className="mt-2 text-sm text-zinc-400">Inizia il tuo percorso di studio oggi.</p>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSignup}>
@@ -71,6 +74,17 @@ export default function SignupPage() {
                     )}
 
                     <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium text-zinc-400">Username</label>
+                            <input
+                                type="text"
+                                required
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="mt-1 block w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                placeholder="johndoe123"
+                            />
+                        </div>
                         <div>
                             <label className="text-sm font-medium text-zinc-400">Email address</label>
                             <input
